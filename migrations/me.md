@@ -1,0 +1,1 @@
+obtain glide twice lend interest extend side vote mean outside elegant morning
