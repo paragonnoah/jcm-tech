@@ -1,4 +1,3 @@
-node_modules
-MNEMONIC = obtain glide twice lend interest extend side vote mean outside elegant morning
-PROJECT_ID = efdb08407d8e454d829f648c1dda4847
-ETHERSCAN_API_KEY = 
+# Inside .gitignore
+.env
+node_modules/

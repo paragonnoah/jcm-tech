@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^17.2.0",
+    "ethereumjs-abi": "^0.6.8"
+  }
+}
