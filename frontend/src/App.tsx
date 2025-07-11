@@ -9,6 +9,8 @@ import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import Markets from './components/Markets';
+import Wallet from './components/Wallet';
 import { Web3 } from 'web3';
 
 interface AppProps {
@@ -20,9 +22,19 @@ const App: React.FC<AppProps> = ({ web3 }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <Header />
       <Routes>
-        <Route path="/" element={<><Hero /><MarketPreview /><HowItWorks /><PaymentOptions /><Testimonials /></>} />
+        <Route path="/" element={
+          <>
+            <Hero />
+            <MarketPreview />
+            <HowItWorks />
+            <PaymentOptions />
+            <Testimonials />
+          </>
+        } />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/markets" element={<Markets />} />
+        <Route path="/wallet" element={<Wallet />} />
       </Routes>
       <Footer />
     </div>

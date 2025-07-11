@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
           <a href="#" className="hover:text-blue-200 mx-2">Privacy Policy</a>
         </div>
         <div className="flex justify-center space-x-4 mb-4">
-          <a href="#" className="hover:text-blue-200">Twitter</a>
+          <a href="#" className="hover:text-blue-200">x</a>
           <a href="#" className="hover:text-blue-200">Telegram</a>
         </div>
         <p>Contact: <a href="mailto:support@jcm-p2p.com" className="hover:text-blue-200">support@jcm-p2p.com</a></p>
