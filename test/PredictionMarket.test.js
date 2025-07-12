@@ -1,21 +1,32 @@
 const PredictionMarket = artifacts.require("PredictionMarket");
 
 contract("PredictionMarket", (accounts) => {
-  it("should create a market and allow betting", async () => {
+  it("should create a market", async () => {
     const instance = await PredictionMarket.deployed();
-    await instance.createMarket("Will 2027 election favor party X?", { from: accounts[0] });
-    await instance.placeBet(1, true, { value: web3.utils.toWei("1", "ether"), from: accounts[1] });
-    const yesBet = await instance.betsYes(accounts[1], 1);
-    assert.equal(web3.utils.fromWei(yesBet.toString(), "ether"), "1", "Bet amount should be 1 ETH");
+    await instance.createMarket("Test Market", "Test", 180, 220, { from: accounts[0] });
+    const market = await instance.markets(1);
+    assert(market.question === "Test Market", "Market not created correctly");
   });
 
-  it("should resolve market and allow withdrawal", async () => {
+  it("should place a bet", async () => {
+    const instance = await PredictionMarket.deployed();
+    await instance.deposit({ from: accounts[0], value: web3.utils.toWei("1", "ether") });
+    await instance.placeBet(1, true, web3.utils.toWei("0.1", "ether"), { from: accounts[0] });
+    const balance = await instance.getBalance(accounts[0]);
+    assert(balance.lt(web3.utils.toWei("1", "ether")), "Bet not placed correctly");
+  });
+
+  it("should resolve a market", async () => {
     const instance = await PredictionMarket.deployed();
     await instance.resolveMarket(1, true, { from: accounts[0] });
-    const isResolved = await instance.isResolved(1);
-    assert.equal(isResolved, true, "Market should be resolved");
-    await instance.withdrawWinnings(1, { from: accounts[1] });
-    const yesBet = await instance.betsYes(accounts[1], 1);
-    assert.equal(yesBet.toString(), "0", "Winnings should be withdrawn");
+    const market = await instance.markets(1);
+    assert(market.isResolved === true, "Market not resolved");
+  });
+
+  it("should withdraw payout", async () => {
+    const instance = await PredictionMarket.deployed();
+    await instance.withdrawPayout(1, { from: accounts[0] });
+    const balance = await instance.getBalance(accounts[0]);
+    assert(balance.gt(web3.utils.toWei("0.9", "ether")), "Payout not withdrawn");
   });
 });

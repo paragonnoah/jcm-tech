@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios, { AxiosError } from 'axios';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
     phone: '',
-    username: '',
+    name: '', // Changed from 'username' to match backend 'name' field
     email: '',
     password: '',
     confirmPassword: '',
@@ -15,16 +16,28 @@ const Signup: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    // Mock signup for dev (no database)
-    console.log("Signing up with:", formData);
-    alert("Dev signup successful! Redirecting to login.");
-    navigate('/login');
+    try {
+      await axios.post('http://localhost:5000/api/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+      });
+      alert("Signup successful! Redirecting to login.");
+      navigate('/login');
+    } catch (err) {
+      let errorMessage = 'Signup failed: An unknown error occurred';
+      if (err instanceof AxiosError) {
+        errorMessage = 'Signup failed: ' + (err.response?.data?.message || 'Error occurred');
+      }
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -40,19 +53,19 @@ const Signup: React.FC = () => {
               value={formData.phone}
               onChange={handleChange}
               className="w-full p-3 rounded-lg bg-white/50 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter phone number"
+              placeholder="Enter phone number (e.g., 0712345678)"
               required
             />
           </div>
           <div>
-            <label className="block text-white mb-2">Username</label>
+            <label className="block text-white mb-2">Name</label>
             <input
               type="text"
-              name="username"
-              value={formData.username}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full p-3 rounded-lg bg-white/50 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Choose a username"
+              placeholder="Enter your name"
               required
             />
           </div>
@@ -99,7 +112,7 @@ const Signup: React.FC = () => {
             Sign Up
           </button>
           <div className="text-center">
-            <a href="#" className="text-blue-200 hover:underline">Forgot Password?</a>
+            <a href="/login" className="text-blue-200 hover:underline">Already have an account? Login</a>
           </div>
         </form>
       </div>
