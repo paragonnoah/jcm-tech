@@ -2,13 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+interface Transaction {
+  type: string;
+  amount: number;
+  date: string;
+  method?: string;
+}
+
+interface WalletData {
+  balance: number;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    joinedDate: string;
+  };
+  transactions: Transaction[];
+}
+
 const Wallet: React.FC = () => {
   const navigate = useNavigate();
-  const [wallet, setWallet] = useState<{ balance: number; transactions: any[] }>({
-    balance: 0,
-    transactions: [],
-  });
-
+  const [wallet, setWallet] = useState<WalletData | null>(null);
   const [depositAmount, setDepositAmount] = useState<number>(0);
   const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,13 +40,21 @@ const Wallet: React.FC = () => {
         const res = await axios.get('http://localhost:5000/api/wallet', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setWallet(res.data);
+        const data = res.data;
+        setWallet({
+          ...data,
+          balance: typeof data.balance === 'number' ? data.balance : 0,
+        });
       } catch (err) {
         console.error('Error fetching wallet:', err);
         if (axios.isAxiosError(err)) {
           if (err.response?.status === 401) {
             navigate('/login');
+          } else {
+            alert('Error fetching wallet: ' + (err.response?.data?.message || 'Unknown error'));
           }
+        } else if (err instanceof Error) {
+          alert('Error fetching wallet: ' + err.message);
         } else {
           alert('Unexpected error occurred while fetching wallet');
         }
@@ -46,11 +68,19 @@ const Wallet: React.FC = () => {
       alert("Please enter a valid deposit amount!");
       return;
     }
+    if (!wallet) {
+      alert("Wallet data not loaded!");
+      return;
+    }
     setCurrentAction({ type: 'Deposit', amount: depositAmount });
     setShowConfirm(true);
   };
 
   const handleWithdraw = () => {
+    if (!wallet) {
+      alert("Wallet data not loaded!");
+      return;
+    }
     if (withdrawAmount <= 0 || withdrawAmount > wallet.balance) {
       alert("Invalid amount or insufficient balance!");
       return;
@@ -60,7 +90,7 @@ const Wallet: React.FC = () => {
   };
 
   const confirmTransaction = async () => {
-    if (!currentAction || !token) return;
+    if (!currentAction || !token || !wallet) return;
     setIsLoading(true);
     setShowConfirm(false);
     try {
@@ -72,11 +102,17 @@ const Wallet: React.FC = () => {
       const res = await axios.get('http://localhost:5000/api/wallet', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setWallet(res.data);
+      setWallet({
+        ...res.data,
+        balance: typeof res.data.balance === 'number' ? res.data.balance : 0,
+      });
       alert(`Mock ${currentAction.type} of ${currentAction.amount} KSH successful!`);
     } catch (err) {
+      console.error('Transaction error:', err);
       if (axios.isAxiosError(err)) {
         alert('Transaction failed: ' + err.response?.data?.message || 'Unknown error');
+      } else if (err instanceof Error) {
+        alert('Transaction failed: ' + err.message);
       } else {
         alert('Unexpected error during transaction');
       }
@@ -99,7 +135,9 @@ const Wallet: React.FC = () => {
         <div className="bg-white/40 backdrop-blur-md p-6 rounded-xl shadow-lg hover:shadow-xl transition">
           <div className="text-center mb-6">
             <h3 className="text-2xl font-semibold text-white">Balance</h3>
-            <p className="text-4xl font-bold text-blue-200">{wallet.balance.toFixed(2)} KSH</p>
+            <p className="text-4xl font-bold text-blue-200">
+              {wallet ? wallet.balance.toFixed(2) : '0.00'} KSH
+            </p>
             <p className="text-lg text-gray-200 mt-2">Registered M-Pesa: 0712345678 (Locked)</p>
           </div>
 
@@ -115,8 +153,8 @@ const Wallet: React.FC = () => {
               />
               <button
                 onClick={handleDeposit}
-                disabled={isLoading}
-                className={`w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isLoading || !wallet}
+                className={`w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition ${isLoading || !wallet ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isLoading ? 'Processing...' : 'Deposit'}
               </button>
@@ -132,8 +170,8 @@ const Wallet: React.FC = () => {
               />
               <button
                 onClick={handleWithdraw}
-                disabled={isLoading}
-                className={`w-full bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isLoading || !wallet}
+                className={`w-full bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition ${isLoading || !wallet ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isLoading ? 'Processing...' : 'Withdraw'}
               </button>
@@ -150,9 +188,9 @@ const Wallet: React.FC = () => {
           <div className="mt-6">
             <h4 className="text-xl font-semibold text-white mb-4">Transaction History</h4>
             <div className="space-y-2 max-h-40 overflow-y-auto">
-              {wallet.transactions.map((tx, index) => (
+              {wallet?.transactions.map((tx, index) => (
                 <div key={index} className="p-2 bg-gray-700/50 rounded-lg text-white animate-slide-up">
-                  {tx.type}: {tx.amount} KSH via {tx.method} - {tx.date}
+                  {tx.type}: {tx.amount} KSH via {tx.method || 'N/A'} - {tx.date || 'N/A'}
                 </div>
               ))}
             </div>

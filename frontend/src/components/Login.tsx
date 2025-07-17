@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/login', { email, password });
+      const res = await axios.post('http://localhost:5000/api/login', { email, password }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      console.log('Login response:', res.data);
       localStorage.setItem('token', res.data.token);
-      navigate('/dashboard');
+      navigate('/profile'); // Changed to /profile instead of /dashboard
     } catch (err) {
+      console.error('Login error:', err);
       let errorMessage = 'Login failed: An unknown error occurred';
-      if (err instanceof AxiosError) {
-        errorMessage = 'Login failed: ' + (err.response?.data?.message || 'Invalid credentials');
+      if (axios.isAxiosError(err)) {
+        errorMessage = `Login failed: ${err.response?.data?.message || err.message}`;
+      } else if (err instanceof Error) {
+        errorMessage = `Login failed: ${err.message}`;
       }
       alert(errorMessage);
     }

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
     phone: '',
-    name: '', // Changed from 'username' to match backend 'name' field
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -31,7 +31,7 @@ const Signup: React.FC = () => {
       });
       alert("Signup successful! Redirecting to login.");
       navigate('/login');
-    } catch (err) {
+    } catch (err: unknown) {
       let errorMessage = 'Signup failed: An unknown error occurred';
       if (err instanceof AxiosError) {
         errorMessage = 'Signup failed: ' + (err.response?.data?.message || 'Error occurred');
@@ -112,7 +112,7 @@ const Signup: React.FC = () => {
             Sign Up
           </button>
           <div className="text-center">
-            <a href="/login" className="text-blue-200 hover:underline">Already have an account? Login</a>
+            <Link to="/login" className="text-blue-200 hover:underline">Already have an account? Login</Link>
           </div>
         </form>
       </div>

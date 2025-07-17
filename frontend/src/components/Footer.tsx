@@ -15,9 +15,9 @@ const Footer: React.FC = () => {
         </div>
         <p>Contact: <a href="mailto:support@jcm-p2p.com" className="hover:text-blue-200">support@jcm-p2p.com</a></p>
         <div className="mt-4 flex justify-center space-x-4">
-          <span>MetaMask</span>
+        
           <span>M-Pesa</span>
-          <span>Card</span>
+         
         </div>
       </div>
     </footer>
